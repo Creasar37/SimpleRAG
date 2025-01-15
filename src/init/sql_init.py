@@ -15,7 +15,7 @@ def create_vectors_info_table(database_path="database/sqlite.db"):
         name TEXT PRIMARY KEY,
         type TEXT NOT NULL,
         embedding_model_name TEXT NOT NULL,
-        parameters JSON NOT NULL,
+        parameters JSON,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """
