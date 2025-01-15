@@ -13,7 +13,7 @@ log_file = os.path.join(log_dir, "app.log")
 # 配置日志格式
 formatter = logging.Formatter(
     fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S:%f"
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 # 创建 TimedRotatingFileHandler，按天分割日志文件
