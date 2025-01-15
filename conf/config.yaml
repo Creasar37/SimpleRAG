@@ -1,0 +1,23 @@
+# Milvus默认参数
+Milvus:
+  default_index_type: FLAT
+  index_params:
+    FLAT:
+    IVF_FLAT:
+      nlist: 1024
+      nprobe: 16
+    HNSW:
+      efConstruction: 100
+  default_metric_type: L2
+
+# LanceDB默认参数
+LanceDB:
+  default_index_type: IVF_PQ
+  default_metric_type: L2
+
+# 嵌入模型参数
+embedding_model:
+  Conan-embedding-v1:
+    dim: 1792
+  bge-small-zh-v1:
+    dim: 512
