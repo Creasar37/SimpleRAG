@@ -9,25 +9,13 @@ db = lancedb.connect("database/lancedb")
 def lancedb_create(embedding_model, vectors_name, params):
     sel_res = execute_sql(
         query="SELECT * FROM vectors_info WHERE name = ?;",
-        params=(vectors_name,),
+        params=(vectors_name, ),
         fetch_results=True
     )
     if sel_res:
         logger.info(f"向量库 {vectors_name} 已存在")
         raise Exception("向量库已存在")
     embeddings_dim = config["embedding_model"][embedding_model]["dim"]
-    if "index_type" in params:
-        index_type = params["index_type"]
-    else:
-        index_type = config["LanceDB"]["default_index_type"]
-    if "index_params" in params:
-        index_params = params["index_params"]
-    else:
-        index_params = {}
-    if "metric_type" in params:
-        metric_type = params["metric_type"]
-    else:
-        metric_type = config["LanceDB"]["default_metric_type"]
     schema = pa.schema(
         [
             pa.field("id", pa.int64(), nullable=False),

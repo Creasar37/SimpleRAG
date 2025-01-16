@@ -17,7 +17,7 @@ LanceDB:
 
 # 嵌入模型参数
 embedding_model:
-  Conan-embedding-v1:
-    dim: 1792
-  bge-small-zh-v1:
+  bge-small-zh-v1.5:
     dim: 512
+  stella-base-zh-v2:
+    dim: 768
