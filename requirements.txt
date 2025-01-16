@@ -1,0 +1,7 @@
+pymilvus==2.5.3
+lancedb==0.18.0
+pyarrow==18.1.0
+fastapi==0.115.6
+pydantic==2.10.5
+yaml==0.2.5
+pyyaml==6.0.2
