@@ -6,10 +6,10 @@ from conf.config import config
 
 db = lancedb.connect("database/lancedb")
 
-def lancedb_create(embedding_model, vectors_name, params):
+def lancedb_create(embedding_model, vectors_name, vector_type, params):
     sel_res = execute_sql(
-        query="SELECT * FROM vectors_info WHERE name = ?;",
-        params=(vectors_name,),
+        query="SELECT * FROM vectors_info WHERE name = ? AND type = ?;",
+        params=(vectors_name, vector_type),
         fetch_results=True
     )
     if sel_res:

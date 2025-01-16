@@ -4,13 +4,18 @@ from src.logger.logger import logger
 from src.utils.sql_executor import execute_sql
 import json
 
-client = MilvusClient("database/milvus.db")
+client_lite = MilvusClient("database/milvus.db")
+client_standalone = MilvusClient("http://localhost:19530")
 
 
-def milvus_create(embedding_model, vectors_name, params):
+def milvus_create(embedding_model, vectors_name, vector_type, params):
+    if vector_type == "milvus":
+        client = client_standalone
+    else:
+        client = client_lite
     sel_res = execute_sql(
-        query="SELECT * FROM vectors_info WHERE name = ?;",
-        params=(vectors_name,),
+        query="SELECT * FROM vectors_info WHERE name = ? AND type = ?;",
+        params=(vectors_name, vector_type),
         fetch_results=True
     )
     if sel_res:
@@ -37,7 +42,7 @@ def milvus_create(embedding_model, vectors_name, params):
     col_index_params = client.prepare_index_params()
     col_index_params.add_index(
         field_name="embeddings", index_type=index_type,
-        metric_type=metric_type, params=index_params
+        metric_type=metric_type, params=index_params.copy()
     )
     client.create_collection(collection_name=vectors_name, schema=col_schema, index_params=col_index_params)
     all_params = {"index_type": index_type, "metric_type": metric_type, "index_params": index_params}
