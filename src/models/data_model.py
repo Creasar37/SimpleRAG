@@ -25,3 +25,8 @@ class VectorsInitResponse(BaseModel):
 class VectorsAddResponse(BaseModel):
     status: str
     details: str = None
+
+
+class VectorsDropResponse(BaseModel):
+    status: str
+    details: str = None

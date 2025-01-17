@@ -1,8 +1,8 @@
 import os
 from typing import List
 from src.models.data_model import VectorsInitRequest, VectorsInitResponse, VectorsAddResponse, VectorsListResponse
-from src.api.vectors.lancedb import lancedb_create, lancedb_insert
-from src.api.vectors.milvus import milvus_create, milvus_insert
+from src.api.vectors.lancedb import lancedb_create, lancedb_insert, lancedb_delete
+from src.api.vectors.milvus import milvus_create, milvus_insert, milvus_delete
 from src.logger.logger import logger
 from fastapi import File, UploadFile
 from src.utils.sql_executor import execute_sql
@@ -62,3 +62,20 @@ def vectors_list_all():
     )
     vectors_list = [sql_res[i][0] for i in range(len(sql_res))]
     return VectorsListResponse(vectors_name=vectors_list)
+
+
+def vectors_delete(vectors_name: str):
+    sql_res = execute_sql(
+        query="SELECT type FROM vectors_info WHERE name = ?;",
+        params=(vectors_name, ),
+        fetch_results=True
+    )
+    if not sql_res:
+        raise Exception("vectors_name错误")
+    vectors_type = sql_res[0][0]
+    if vectors_type == "milvus":
+        milvus_delete(vectors_name)
+    elif vectors_type == "lancedb":
+        lancedb_delete(vectors_name)
+    else:
+        raise Exception("vectors_type错误")

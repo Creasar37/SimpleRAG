@@ -60,3 +60,12 @@ def milvus_insert(vectors_name, texts, embeddings):
     ]
     res = client.insert(collection_name=vectors_name, data=data)
     return res
+
+
+def milvus_delete(vectors_name):
+    client.drop_collection(collection_name=vectors_name)
+    execute_sql(
+        query="DELETE FROM vectors_info WHERE name = ?;",
+        params=(vectors_name, )
+    )
+    logger.info(f"milvus向量库{vectors_name}删除成功")

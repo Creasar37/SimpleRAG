@@ -46,3 +46,12 @@ def lancedb_insert(vectors_name, texts, embeddings):
     ]
     tbl.add(data)
     logger.info(f"lancedb向量库{vectors_name}插入成功")
+
+
+def lancedb_delete(vectors_name):
+    db.drop_table(vectors_name)
+    execute_sql(
+        query="DELETE FROM vectors_info WHERE name = ?;",
+        params=(vectors_name, )
+    )
+    logger.info(f"lancedb向量库{vectors_name}删除成功")
