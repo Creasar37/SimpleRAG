@@ -1,7 +1,7 @@
 import pickle
 from conf.config import config
 from sentence_transformers import SentenceTransformer
-from src.init.init import redis_client
+from src.init.redis_init import redis_client
 from src.logger.logger import logger
 
 
@@ -15,7 +15,9 @@ class EmbeddingClient:
             self.load_model(model_name)
     def load_model(self, model_name):
         self.models[model_name] = SentenceTransformer(config["embedding_model"][model_name]["path"])
-    def get_embedding(self, texts, model_name="bge-small-zh-v1.5"):
+    def get_embedding(self, texts, model_name=None):
+        if model_name is None:
+            model_name = "bge-small-zh-v1.5"
         embedding_keys = [f"embedding:{model_name}:{text}" for text in texts]
         embedding_list = []
 

@@ -31,7 +31,7 @@ def milvus_create(embedding_model, vectors_name, params):
         metric_type = config["Milvus"]["default_metric_type"]
     col_schema = MilvusClient.create_schema(auto_id=True)
     col_schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
-    col_schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=500)
+    col_schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=5000)
     col_schema.add_field(field_name="embeddings", datatype=DataType.FLOAT_VECTOR, dim=embeddings_dim)
     col_index_params = client.prepare_index_params()
     col_index_params.add_index(
@@ -45,3 +45,18 @@ def milvus_create(embedding_model, vectors_name, params):
         params=(vectors_name, "milvus", embedding_model, json.dumps(all_params))
     )
     logger.info(f"milvus向量库{vectors_name}创建成功")
+
+
+def milvus_insert(vectors_name, texts, embeddings):
+    for i, text in enumerate(texts):
+        if len(text) > 500:
+            print(f"Row {i}: Text length {len(text)} exceeds max length 500")
+    data = [
+        {
+            "text": texts[i],
+            "embeddings": embeddings[i].tolist()
+        }
+        for i in range(len(texts))
+    ]
+    res = client.insert(collection_name=vectors_name, data=data)
+    return res

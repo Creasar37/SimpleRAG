@@ -3,6 +3,8 @@ import pyarrow as pa
 from src.utils.sql_executor import execute_sql
 from src.logger.logger import logger
 from conf.config import config
+import uuid
+
 
 db = lancedb.connect("database/lancedb")
 
@@ -18,7 +20,7 @@ def lancedb_create(embedding_model, vectors_name, params):
     embeddings_dim = config["embedding_model"][embedding_model]["dim"]
     schema = pa.schema(
         [
-            pa.field("id", pa.int64(), nullable=False),
+            pa.field("id", pa.string(), nullable=False),
             pa.field("text", pa.string(), nullable=False),
             pa.field("embeddings", pa.list_(pa.float32(), embeddings_dim), nullable=False)
         ]
@@ -30,3 +32,17 @@ def lancedb_create(embedding_model, vectors_name, params):
         params=(vectors_name, "lancedb", embedding_model)
     )
     logger.info(f"lancedb向量库{vectors_name}创建成功")
+
+
+def lancedb_insert(vectors_name, texts, embeddings):
+    tbl = db.open_table(vectors_name)
+    data = [
+        {
+            "id": str(uuid.uuid1()),
+            "text": texts[i],
+            "embeddings": embeddings[i].tolist()
+        }
+        for i in range(len(texts))
+    ]
+    tbl.add(data)
+    logger.info(f"lancedb向量库{vectors_name}插入成功")

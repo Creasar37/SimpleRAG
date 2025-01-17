@@ -1,16 +1,18 @@
 from fastapi import FastAPI
 import os
 from src.init.sql_init import create_vectors_info_table
-import redis
-from conf.config import config
+from src.client.embedding import EmbeddingClient
+
 
 app = FastAPI()
 
 if not os.path.exists("database"):
     os.mkdir("database")
+if not os.path.exists("files"):
+    os.mkdir("files")
 
 # 表初始化
 create_vectors_info_table("database/sqlite.db")
 
-redis_client = redis.Redis(**config["Redis"])
 
+EmbedClient = EmbeddingClient()
