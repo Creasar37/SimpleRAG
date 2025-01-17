@@ -1,6 +1,6 @@
 import os
 from typing import List
-from src.models.data_model import VectorsInitRequest, VectorsInitResponse, VectorsAddResponse
+from src.models.data_model import VectorsInitRequest, VectorsInitResponse, VectorsAddResponse, VectorsListResponse
 from src.api.vectors.lancedb import lancedb_create, lancedb_insert
 from src.api.vectors.milvus import milvus_create, milvus_insert
 from src.logger.logger import logger
@@ -53,3 +53,12 @@ def add_file(vectors_name: str, files: List[UploadFile] = File(...)):
         res = f"成功插入{res["insert_count"]}条"
         logger.info(res)
     return VectorsAddResponse(status="success", details=res)
+
+
+def vectors_list_all():
+    sql_res = execute_sql(
+        query="SELECT name FROM vectors_info;",
+        fetch_results=True
+    )
+    vectors_list = [sql_res[i][0] for i in range(len(sql_res))]
+    return VectorsListResponse(vectors_name=vectors_list)

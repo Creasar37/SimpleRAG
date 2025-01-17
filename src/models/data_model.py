@@ -1,8 +1,14 @@
+from typing import List
 from pydantic import BaseModel
 
 class HealthCheckResponse(BaseModel):
     status: str
     details: dict = None
+
+
+class VectorsListResponse(BaseModel):
+    vectors_name: List[str] = None
+
 
 class VectorsInitRequest(BaseModel):
     embedding_model: str = "bge-small-zh-v1.5"
