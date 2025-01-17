@@ -6,22 +6,24 @@ import json
 
 client = MilvusClient("database/milvus.db")
 
-def milvus_create(embedding_model, vectors_name, params):
+def milvus_create(embedding_model, vdb_name, params):
     sel_res = execute_sql(
-        query="SELECT * FROM vectors_info WHERE name = ?;",
-        params=(vectors_name, ),
+        query="SELECT * FROM vdb_info WHERE name = ?;",
+        params=(vdb_name, ),
         fetch_results=True
     )
     if sel_res:
-        logger.info(f"向量库 {vectors_name} 已存在")
+        logger.info(f"向量库 {vdb_name} 已存在")
         raise Exception("向量库已存在")
     embeddings_dim = config["embedding_model"][embedding_model]["dim"]
     if "index_type" in params:
         index_type = params["index_type"]
         index_params = config["Milvus"]["index_params"][index_type]
-        for index_param in index_params:
-            if index_param in params["index_params"]:
-                index_params[index_param] = params["index_params"][index_param]
+        if "index_params" in params:
+            for index_param in index_params:
+                if index_param in params["index_params"]:
+                    index_params[index_param] = params["index_params"][index_param]
+
     else:
         index_type = config["Milvus"]["default_index_type"]
         index_params = {}
@@ -38,16 +40,16 @@ def milvus_create(embedding_model, vectors_name, params):
         field_name="embeddings", index_type=index_type,
         metric_type=metric_type, params=index_params.copy()
     )
-    client.create_collection(collection_name=vectors_name, schema=col_schema, index_params=col_index_params)
+    client.create_collection(collection_name=vdb_name, schema=col_schema, index_params=col_index_params)
     all_params = {"index_type": index_type, "metric_type": metric_type, "index_params": index_params}
     execute_sql(
-        query="INSERT INTO vectors_info (name, type, embedding_model_name, parameters) VALUES (?, ?, ?, ?);",
-        params=(vectors_name, "milvus", embedding_model, json.dumps(all_params))
+        query="INSERT INTO vdb_info (name, type, embedding_model_name, parameters) VALUES (?, ?, ?, ?);",
+        params=(vdb_name, "milvus", embedding_model, json.dumps(all_params))
     )
-    logger.info(f"milvus向量库{vectors_name}创建成功")
+    logger.info(f"milvus向量库{vdb_name}创建成功")
 
 
-def milvus_insert(vectors_name, texts, embeddings):
+def milvus_insert(vdb_name, texts, embeddings):
     for i, text in enumerate(texts):
         if len(text) > 500:
             print(f"Row {i}: Text length {len(text)} exceeds max length 500")
@@ -58,14 +60,14 @@ def milvus_insert(vectors_name, texts, embeddings):
         }
         for i in range(len(texts))
     ]
-    res = client.insert(collection_name=vectors_name, data=data)
+    res = client.insert(collection_name=vdb_name, data=data)
     return res
 
 
-def milvus_delete(vectors_name):
-    client.drop_collection(collection_name=vectors_name)
+def milvus_delete(vdb_name):
+    client.drop_collection(collection_name=vdb_name)
     execute_sql(
-        query="DELETE FROM vectors_info WHERE name = ?;",
-        params=(vectors_name, )
+        query="DELETE FROM vdb_info WHERE name = ?;",
+        params=(vdb_name, )
     )
-    logger.info(f"milvus向量库{vectors_name}删除成功")
+    logger.info(f"milvus向量库{vdb_name}删除成功")

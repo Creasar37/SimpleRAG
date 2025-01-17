@@ -4,10 +4,10 @@ Milvus:
   index_params:
     FLAT:
     IVF_FLAT:
-      nlist: 1024
-      nprobe: 16
+      nlist: 128
     HNSW:
-      efConstruction: 100
+      M: 16
+      efConstruction: 200
   default_metric_type: L2
 
 # LanceDB默认参数

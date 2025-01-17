@@ -1,0 +1,84 @@
+import os
+from typing import List
+from src.models.data_model import VDBInitRequest, VDBInitResponse, VDBAddResponse, VDBListResponse, VDBDropResponse
+from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete
+from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete
+from src.logger.logger import logger
+from fastapi import File, UploadFile
+from src.utils.sql_executor import execute_sql
+from src.api.vdb.documents import get_embed_text
+
+
+def vdb_init(init_request: VDBInitRequest):
+    embedding_model = init_request.embedding_model
+    vdb_name = init_request.vdb_name
+    vdb_type = init_request.vdb_type
+    params = init_request.params
+    logger.info(f"开始创建向量库{vdb_name}")
+    if vdb_type in ["milvus", "milvus-lite"]:
+        milvus_create(embedding_model, vdb_name, params)
+    elif vdb_type == "lancedb":
+        lancedb_create(embedding_model, vdb_name, params)
+    else:
+        raise Exception("vdb_type错误")
+    return VDBInitResponse(status="success")
+
+
+def add_file(vdb_name: str, files: List[UploadFile] = File(...)):
+    sql_res = execute_sql(
+        query="SELECT type, embedding_model_name FROM vdb_info WHERE name = ?;",
+        params=(vdb_name, ),
+        fetch_results=True
+    )
+    if not sql_res:
+        raise Exception("vdb_name错误")
+    vdb_type = sql_res[0][0]
+    embedding_model_name = sql_res[0][1]
+    if not os.path.exists(f"files/{vdb_name}"):
+        os.mkdir(f"files/{vdb_name}")
+    file_paths = []
+    for file in files:
+        file_path = f"files/{vdb_name}/{file.filename}"
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
+            file_paths.append(file_path)
+    texts, embeddings = get_embed_text(file_paths, embedding_model_name)
+    if vdb_type == "milvus":
+        res = milvus_insert(vdb_name, texts, embeddings)
+    elif vdb_type == "lancedb":
+        res = lancedb_insert(vdb_name, texts, embeddings)
+    else:
+        raise Exception("vdb_type错误")
+    if res:
+        res = f"成功插入{res["insert_count"]}条"
+        logger.info(res)
+    else:
+        res = ""
+    return VDBAddResponse(status="success", details=res)
+
+
+def vdb_list_all():
+    sql_res = execute_sql(
+        query="SELECT name FROM vdb_info;",
+        fetch_results=True
+    )
+    vdb_list = [sql_res[i][0] for i in range(len(sql_res))]
+    return VDBListResponse(vdb_name=vdb_list)
+
+
+def vdb_drop(vdb_name: str):
+    sql_res = execute_sql(
+        query="SELECT type FROM vdb_info WHERE name = ?;",
+        params=(vdb_name, ),
+        fetch_results=True
+    )
+    if not sql_res:
+        raise Exception("vdb_name错误")
+    vdb_type = sql_res[0][0]
+    if vdb_type == "milvus":
+        milvus_delete(vdb_name)
+    elif vdb_type == "lancedb":
+        lancedb_delete(vdb_name)
+    else:
+        raise Exception("vdb_type错误")
+    return VDBDropResponse(status="success")

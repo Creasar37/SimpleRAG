@@ -6,27 +6,27 @@ class HealthCheckResponse(BaseModel):
     details: dict = None
 
 
-class VectorsListResponse(BaseModel):
-    vectors_name: List[str] = None
+class VDBListResponse(BaseModel):
+    vdb_name: List[str] = None
 
 
-class VectorsInitRequest(BaseModel):
+class VDBInitRequest(BaseModel):
     embedding_model: str = "bge-small-zh-v1.5"
-    vectors_name: str = None
-    vectors_type: str = "lancedb"
+    vdb_name: str = None
+    vdb_type: str = "lancedb"
     params: dict = None
 
 
-class VectorsInitResponse(BaseModel):
+class VDBInitResponse(BaseModel):
     status: str
     details: dict = None
 
 
-class VectorsAddResponse(BaseModel):
+class VDBAddResponse(BaseModel):
     status: str
     details: str = None
 
 
-class VectorsDropResponse(BaseModel):
+class VDBDropResponse(BaseModel):
     status: str
     details: str = None

@@ -1,8 +1,8 @@
 import sqlite3
 
-def create_vectors_info_table(database_path="database/sqlite.db"):
+def create_vdb_info_table(database_path="database/sqlite.db"):
     """
-    创建 vectors_info 表，如果不存在。
+    创建 vdb_info 表，如果不存在。
     :param database_path: 数据库文件路径
     """
     # 连接 SQLite 数据库
@@ -11,7 +11,7 @@ def create_vectors_info_table(database_path="database/sqlite.db"):
 
     # 创建表的 SQL 语句
     create_table_query = """
-    CREATE TABLE IF NOT EXISTS vectors_info (
+    CREATE TABLE IF NOT EXISTS vdb_info (
         name TEXT PRIMARY KEY,
         type TEXT NOT NULL,
         embedding_model_name TEXT NOT NULL,
