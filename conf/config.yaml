@@ -18,6 +18,15 @@ LanceDB:
 # 嵌入模型参数
 embedding_model:
   bge-small-zh-v1.5:
+    path: models/embedding/bge-small-zh-v1.5
     dim: 512
   stella-base-zh-v2:
+    path: models/embedding/stella-base-zh-v2
     dim: 768
+
+# Redis
+Redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
