@@ -1,3 +1,4 @@
 models/embedding/bge-small-zh-v1.5/model.safetensors filter=lfs diff=lfs merge=lfs -text
 models/embedding/bge-small-zh-v1.5/pytorch_model.bin filter=lfs diff=lfs merge=lfs -text
 models/embedding/stella-base-zh-v2/pytorch_model.bin filter=lfs diff=lfs merge=lfs -text
+models/llm/Qwen2.5-0.5B-Instruct/model.safetensors filter=lfs diff=lfs merge=lfs -text
