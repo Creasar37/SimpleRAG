@@ -18,11 +18,19 @@ LanceDB:
 # 嵌入模型参数
 embedding_model:
   bge-small-zh-v1.5:
+    hf_name: BAAI/bge-small-zh-v1.5
     path: models/embedding/bge-small-zh-v1.5
     dim: 512
-  stella-base-zh-v2:
-    path: models/embedding/stella-base-zh-v2
+  Dmeta-embedding-zh-small:
+    hf_name: DMetaSoul/Dmeta-embedding-zh-small
+    path: models/embedding/Dmeta-embedding-zh-small
     dim: 768
+
+# LLM参数
+LLM:
+  Qwen2.5-0.5B-Instruct:
+    hf_name: Qwen/Qwen2.5-0.5B-Instruct
+    path: models/LLM/Qwen2.5-0.5B-Instruct
 
 # Redis
 Redis:
