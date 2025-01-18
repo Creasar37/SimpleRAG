@@ -34,6 +34,7 @@ def milvus_create(embedding_model, vdb_name, params):
     col_schema = MilvusClient.create_schema(auto_id=True)
     col_schema.add_field(field_name="id", datatype=DataType.INT64, is_primary=True)
     col_schema.add_field(field_name="text", datatype=DataType.VARCHAR, max_length=5000)
+    col_schema.add_field(field_name="file_hash", datatype=DataType.VARCHAR, max_length=500)
     col_schema.add_field(field_name="embeddings", datatype=DataType.FLOAT_VECTOR, dim=embeddings_dim)
     col_index_params = client.prepare_index_params()
     col_index_params.add_index(
@@ -49,13 +50,14 @@ def milvus_create(embedding_model, vdb_name, params):
     logger.info(f"milvus向量库{vdb_name}创建成功")
 
 
-def milvus_insert(vdb_name, texts, embeddings):
+def milvus_insert(vdb_name, texts, hashes, embeddings):
     for i, text in enumerate(texts):
         if len(text) > 500:
             print(f"Row {i}: Text length {len(text)} exceeds max length 500")
     data = [
         {
             "text": texts[i],
+            "file_hash": hashes[i],
             "embeddings": embeddings[i].tolist()
         }
         for i in range(len(texts))

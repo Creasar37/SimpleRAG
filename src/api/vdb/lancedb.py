@@ -22,6 +22,7 @@ def lancedb_create(embedding_model, vdb_name, params):
         [
             pa.field("id", pa.string(), nullable=False),
             pa.field("text", pa.string(), nullable=False),
+            pa.field("file_hash", pa.string(), nullable=False),
             pa.field("embeddings", pa.list_(pa.float32(), embeddings_dim), nullable=False)
         ]
     )
@@ -34,12 +35,13 @@ def lancedb_create(embedding_model, vdb_name, params):
     logger.info(f"lancedb向量库{vdb_name}创建成功")
 
 
-def lancedb_insert(vdb_name, texts, embeddings):
+def lancedb_insert(vdb_name, texts, hashes, embeddings):
     tbl = db.open_table(vdb_name)
     data = [
         {
             "id": str(uuid.uuid1()),
             "text": texts[i],
+            "file_hash": hashes[i],
             "embeddings": embeddings[i].tolist()
         }
         for i in range(len(texts))

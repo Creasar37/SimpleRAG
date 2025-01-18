@@ -50,11 +50,11 @@ def add_file(vdb_name: str, files: List[UploadFile] = File(...)):
             logger.info(f"文件{file.filename}已存在")
             continue
         file_paths.append(file_path)
-    texts, embeddings = get_embed_text(file_paths, embedding_model_name)
+    texts, hashes, embeddings = get_embed_text(file_paths, embedding_model_name)
     if vdb_type == "milvus":
-        res = milvus_insert(vdb_name, texts, embeddings)
+        res = milvus_insert(vdb_name, texts, hashes, embeddings)
     elif vdb_type == "lancedb":
-        res = lancedb_insert(vdb_name, texts, embeddings)
+        res = lancedb_insert(vdb_name, texts, hashes, embeddings)
     else:
         raise Exception("vdb_type错误")
     for path in file_paths:
