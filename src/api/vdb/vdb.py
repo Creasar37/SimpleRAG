@@ -1,9 +1,10 @@
 import os
 from typing import List
 from src.models.data_model import (VDBInitRequest, VDBInitResponse, VDBFileAddResponse, VDBListResponse, VDBDropRequest,
-                                   VDBDropResponse, VDBFileListRequest, VDBFileListResponse)
-from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete
-from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete
+                                   VDBDropResponse, VDBFileListRequest, VDBFileListResponse, VDBFileDeleteRequest,
+                                   VDBFileDeleteResponse)
+from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete, lancedb_file_delete
+from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete, milvus_file_delete
 from src.logger.logger import logger
 from fastapi import File, UploadFile
 from src.utils.sql_executor import execute_sql
@@ -120,3 +121,40 @@ def vdb_list_files(list_files_request: VDBFileListRequest):
     else:
         file_info = [{"file_hash": row[0], "file_name": row[1]} for row in sql_res]
     return VDBFileListResponse(file_info=file_info)
+
+def file_delete(file_delete_request: VDBFileDeleteRequest):
+    vdb_name = file_delete_request.vdb_name
+    file_name = file_delete_request.file_name
+    if isinstance(file_name, str):
+        file_name = [file_name]
+    placeholders = ", ".join("?" * len(file_name))
+    sql_res = execute_sql(
+        query=f"""
+            SELECT file_hash
+            FROM files
+            WHERE filename IN ({placeholders});
+        """,
+        params=file_name,
+        fetch_results=True
+    )
+    file_hashs = [row[0] for row in sql_res]
+    sql_res = execute_sql(
+        query="SELECT type FROM vdb_info WHERE name = ?;",
+        params=(vdb_name, ),
+        fetch_results=True
+    )
+    if not sql_res:
+        raise Exception("vdb_name错误")
+    vdb_type = sql_res[0][0]
+    if vdb_type == "milvus":
+        res = milvus_file_delete(vdb_name, file_hashs)
+    elif vdb_type == "lancedb":
+        res = lancedb_file_delete(vdb_name, file_hashs)
+    else:
+        raise Exception("vdb_type错误")
+    if res:
+        res = f"成功删除{res["delete_count"]}条"
+        logger.info(res)
+    else:
+        res = ""
+    return VDBFileDeleteResponse(status="success", details=res)

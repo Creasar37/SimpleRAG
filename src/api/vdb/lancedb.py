@@ -57,3 +57,10 @@ def lancedb_delete(vdb_name):
         params=(vdb_name, )
     )
     logger.info(f"lancedb向量库{vdb_name}删除成功")
+
+
+def lancedb_file_delete(vdb_name, file_hashes):
+    tbl = db.open_table(vdb_name)
+    file_hashes = ", ".join([f"'{file_hash}'" for file_hash in file_hashes])
+    tbl.delete(f"file_hash IN ({file_hashes})")
+    logger.info(f"lancedb向量库{vdb_name}文件删除成功")

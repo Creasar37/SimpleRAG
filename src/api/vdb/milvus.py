@@ -73,3 +73,9 @@ def milvus_delete(vdb_name):
         params=(vdb_name, )
     )
     logger.info(f"milvus向量库{vdb_name}删除成功")
+
+
+def milvus_file_delete(vdb_name, file_hashes):
+    res = client.delete(collection_name=vdb_name, filter=f"file_hash IN {file_hashes}")
+    logger.info(f"milvus向量库{vdb_name}删除成功")
+    return res

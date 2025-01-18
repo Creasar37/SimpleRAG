@@ -42,3 +42,13 @@ class VDBFileListRequest(BaseModel):
 
 class VDBFileListResponse(BaseModel):
     file_info: List[dict] = None
+
+
+class VDBFileDeleteRequest(BaseModel):
+    vdb_name: str = None
+    file_name: List[str] | str = None
+
+
+class VDBFileDeleteResponse(BaseModel):
+    status: str
+    details: str = None
