@@ -1,0 +1,40 @@
+# Milvus默认参数
+Milvus:
+  default_index_type: FLAT
+  index_params:
+    FLAT:
+    IVF_FLAT:
+      nlist: 128
+    HNSW:
+      M: 16
+      efConstruction: 200
+  default_metric_type: L2
+
+# LanceDB默认参数
+LanceDB:
+  default_index_type: IVF_PQ
+  default_metric_type: L2
+
+# 嵌入模型参数
+embedding_model:
+  bge-small-zh-v1.5:
+    hf_name: BAAI/bge-small-zh-v1.5
+    path: models/embedding/bge-small-zh-v1.5
+    dim: 512
+  Dmeta-embedding-zh-small:
+    hf_name: DMetaSoul/Dmeta-embedding-zh-small
+    path: models/embedding/Dmeta-embedding-zh-small
+    dim: 768
+
+# LLM参数
+LLM:
+  Qwen2.5-0.5B-Instruct:
+    hf_name: Qwen/Qwen2.5-0.5B-Instruct
+    path: models/LLM/Qwen2.5-0.5B-Instruct
+
+# Redis
+Redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
