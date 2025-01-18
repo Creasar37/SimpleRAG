@@ -15,6 +15,7 @@ class EmbeddingClient:
             self.load_model(model_name)
     def load_model(self, model_name):
         self.models[model_name] = SentenceTransformer(config["embedding_model"][model_name]["path"])
+        logger.info(f"加载模型：{model_name}")
     def get_embedding(self, texts, model_name=None):
         if model_name is None:
             model_name = "bge-small-zh-v1.5"

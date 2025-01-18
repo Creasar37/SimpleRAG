@@ -1,4 +1,5 @@
 import sqlite3
+from src.logger.logger import logger
 
 
 def execute_sql(query, database_path="database/sqlite.db", params=None, fetch_results=False):
@@ -11,9 +12,14 @@ def execute_sql(query, database_path="database/sqlite.db", params=None, fetch_re
     :param fetch_results: 是否返回查询结果（默认 False）
     :return: 如果 fetch_results=True，返回查询结果；否则返回 None
     """
-    conn = sqlite3.connect(database_path)
-    cursor = conn.cursor()
+    conn = None
+    cursor = None
     try:
+        # 连接数据库并启用外键约束
+        conn = sqlite3.connect(database_path)
+        conn.execute("PRAGMA foreign_keys = ON;")  # 启用外键约束
+        cursor = conn.cursor()
+
         # 执行 SQL 语句
         if params:
             cursor.execute(query, params)
@@ -28,8 +34,11 @@ def execute_sql(query, database_path="database/sqlite.db", params=None, fetch_re
         # 提交非查询操作（如 INSERT、UPDATE、DELETE）
         conn.commit()
     except sqlite3.Error as e:
-        print(f"执行 SQL 语句时发生错误：{e}")
+        logger.error(f"SQL执行错误: {e}\nSQL: {query}\n参数: {params}")
+        return None
     finally:
         # 关闭游标和连接
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

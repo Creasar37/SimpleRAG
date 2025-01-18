@@ -1,12 +1,14 @@
 import os
 from typing import List
-from src.models.data_model import VDBInitRequest, VDBInitResponse, VDBAddResponse, VDBListResponse, VDBDropResponse
+from src.models.data_model import (VDBInitRequest, VDBInitResponse, VDBFileAddResponse, VDBListResponse, VDBDropRequest,
+                                   VDBDropResponse, VDBFileListRequest, VDBFileListResponse)
 from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete
 from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete
 from src.logger.logger import logger
 from fastapi import File, UploadFile
 from src.utils.sql_executor import execute_sql
 from src.api.vdb.documents import get_embed_text
+from src.utils.utils import generate_file_hash
 
 
 def vdb_init(init_request: VDBInitRequest):
@@ -15,7 +17,7 @@ def vdb_init(init_request: VDBInitRequest):
     vdb_type = init_request.vdb_type
     params = init_request.params
     logger.info(f"开始创建向量库{vdb_name}")
-    if vdb_type in ["milvus", "milvus-lite"]:
+    if vdb_type == "milvus":
         milvus_create(embedding_model, vdb_name, params)
     elif vdb_type == "lancedb":
         lancedb_create(embedding_model, vdb_name, params)
@@ -34,6 +36,8 @@ def add_file(vdb_name: str, files: List[UploadFile] = File(...)):
         raise Exception("vdb_name错误")
     vdb_type = sql_res[0][0]
     embedding_model_name = sql_res[0][1]
+    file_info = vdb_list_files(VDBFileListRequest(vdb_name=vdb_name)).file_info
+    file_hashs = {i["file_hash"] for i in file_info}
     if not os.path.exists(f"files/{vdb_name}"):
         os.mkdir(f"files/{vdb_name}")
     file_paths = []
@@ -41,7 +45,11 @@ def add_file(vdb_name: str, files: List[UploadFile] = File(...)):
         file_path = f"files/{vdb_name}/{file.filename}"
         with open(file_path, "wb") as f:
             f.write(file.file.read())
-            file_paths.append(file_path)
+        file_hash = generate_file_hash(file_path)
+        if file_hash in file_hashs:
+            logger.info(f"文件{file.filename}已存在")
+            continue
+        file_paths.append(file_path)
     texts, embeddings = get_embed_text(file_paths, embedding_model_name)
     if vdb_type == "milvus":
         res = milvus_insert(vdb_name, texts, embeddings)
@@ -49,12 +57,22 @@ def add_file(vdb_name: str, files: List[UploadFile] = File(...)):
         res = lancedb_insert(vdb_name, texts, embeddings)
     else:
         raise Exception("vdb_type错误")
+    for path in file_paths:
+        file_hash = generate_file_hash(path)
+        execute_sql(
+            query="INSERT OR IGNORE INTO files (file_hash, filename) VALUES (?, ?);",
+            params=(file_hash, os.path.basename(path))
+        )
+        execute_sql(
+            query="INSERT INTO file_vdb (file_hash, vdb_name) VALUES (?, ?)",
+            params=(file_hash, vdb_name)
+        )
     if res:
         res = f"成功插入{res["insert_count"]}条"
         logger.info(res)
     else:
         res = ""
-    return VDBAddResponse(status="success", details=res)
+    return VDBFileAddResponse(status="success", details=res)
 
 
 def vdb_list_all():
@@ -66,7 +84,8 @@ def vdb_list_all():
     return VDBListResponse(vdb_name=vdb_list)
 
 
-def vdb_drop(vdb_name: str):
+def vdb_drop(drop_request: VDBDropRequest):
+    vdb_name = drop_request.vdb_name
     sql_res = execute_sql(
         query="SELECT type FROM vdb_info WHERE name = ?;",
         params=(vdb_name, ),
@@ -82,3 +101,22 @@ def vdb_drop(vdb_name: str):
     else:
         raise Exception("vdb_type错误")
     return VDBDropResponse(status="success")
+
+
+def vdb_list_files(list_files_request: VDBFileListRequest):
+    vdb_name = list_files_request.vdb_name
+    sql_res = execute_sql(
+        query="""
+        SELECT files.file_hash, files.filename
+        FROM files
+        JOIN file_vdb ON files.file_hash = file_vdb.file_hash
+        WHERE file_vdb.vdb_name = ?;
+        """,
+        params=(vdb_name, ),
+        fetch_results=True
+    )
+    if not sql_res:
+        file_info = []
+    else:
+        file_info = [{"file_hash": row[0], "file_name": row[1]} for row in sql_res]
+    return VDBFileListResponse(file_info=file_info)

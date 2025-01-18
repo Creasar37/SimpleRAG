@@ -19,14 +19,26 @@ class VDBInitRequest(BaseModel):
 
 class VDBInitResponse(BaseModel):
     status: str
-    details: dict = None
+    details: str = None
 
 
-class VDBAddResponse(BaseModel):
+class VDBFileAddResponse(BaseModel):
     status: str
     details: str = None
+
+
+class VDBDropRequest(BaseModel):
+    vdb_name: str = None
 
 
 class VDBDropResponse(BaseModel):
     status: str
     details: str = None
+
+
+class VDBFileListRequest(BaseModel):
+    vdb_name: str = None
+
+
+class VDBFileListResponse(BaseModel):
+    file_info: List[dict] = None
