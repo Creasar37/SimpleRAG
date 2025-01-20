@@ -6,6 +6,7 @@ import json
 
 client = MilvusClient("database/milvus.db")
 
+
 def milvus_create(embedding_model, vdb_name, params):
     sel_res = execute_sql(
         query="SELECT * FROM vdb_info WHERE name = ?;",
@@ -78,4 +79,35 @@ def milvus_delete(vdb_name):
 def milvus_file_delete(vdb_name, file_hashes):
     res = client.delete(collection_name=vdb_name, filter=f"file_hash IN {file_hashes}")
     logger.info(f"milvus向量库{vdb_name}删除成功")
+    return res
+
+
+def milvus_search(vdb_name, vector, top_k, parameters, params):
+    metric_type = parameters["metric_type"]
+    res = client.search(
+        collection_name=vdb_name,
+        data=vector,
+        limit=top_k,
+        output_fields=["text"],
+        search_params={"metric_type": metric_type, "params": params}
+    )
+    # L2距离越小越好，IP、COSINE距离越大越好
+    if metric_type == "L2":
+        res = [
+            {
+                "text": i["entity"]["text"],
+                "distance": i["distance"]
+            }
+            for i in res[0]
+            if i["distance"] < 0.8
+        ]
+    else:
+        res = [
+            {
+                "text": i["entity"]["text"],
+                "distance": i["distance"]
+            }
+            for i in res[0]
+            if i["distance"] > 0.6
+        ]
     return res

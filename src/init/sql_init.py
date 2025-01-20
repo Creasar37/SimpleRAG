@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def create_vdb_info_table(database_path="database/sqlite.db"):
     """
     初始化表

@@ -8,6 +8,7 @@ import uuid
 
 db = lancedb.connect("database/lancedb")
 
+
 def lancedb_create(embedding_model, vdb_name, params):
     sel_res = execute_sql(
         query="SELECT * FROM vdb_info WHERE name = ?;",
@@ -64,3 +65,19 @@ def lancedb_file_delete(vdb_name, file_hashes):
     file_hashes = ", ".join([f"'{file_hash}'" for file_hash in file_hashes])
     tbl.delete(f"file_hash IN ({file_hashes})")
     logger.info(f"lancedb向量库{vdb_name}文件删除成功")
+
+
+def lancedb_search(vdb_name, vector, top_k, params):
+    metric_type = params["metric_type"]
+    tbl = db.open_table(vdb_name)
+    res = tbl.search(vector).select(["text"]).metric(metric_type).limit(top_k).to_list()
+    # 距离越小越好
+    res = [
+        {
+            "text": i["text"],
+            "distance": i["_distance"]
+        }
+        for i in res
+        if i["_distance"] < 0.8
+    ]
+    return res

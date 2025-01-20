@@ -7,18 +7,24 @@ from src.logger.logger import logger
 
 embedding_cache = {}
 
+
 class EmbeddingClient:
     def __init__(self):
         self.model_names = list(config["embedding_model"].keys())
         self.models = {}
+        logger.info("初始化embedding模型")
         for model_name in self.model_names:
             self.load_model(model_name)
+
     def load_model(self, model_name):
         self.models[model_name] = SentenceTransformer(config["embedding_model"][model_name]["path"])
         logger.info(f"加载模型：{model_name}")
+
     def get_embedding(self, texts, model_name=None):
         if model_name is None:
             model_name = "bge-small-zh-v1.5"
+        if isinstance(texts, str):
+            texts = [texts]
         embedding_keys = [f"embedding:{model_name}:{text}" for text in texts]
         embedding_list = []
 

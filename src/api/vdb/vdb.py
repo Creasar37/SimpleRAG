@@ -51,7 +51,7 @@ def add_file(vdb_name: str, files: List[UploadFile] = File(...)):
             logger.info(f"文件{file.filename}已存在")
             continue
         file_paths.append(file_path)
-    texts, hashes, embeddings = get_embed_text(file_paths, embedding_model_name)
+    texts, hashes, embeddings = get_embed_text(files=file_paths, embedding_model_name=embedding_model_name)
     if vdb_type == "milvus":
         res = milvus_insert(vdb_name, texts, hashes, embeddings)
     elif vdb_type == "lancedb":
@@ -121,6 +121,7 @@ def vdb_list_files(list_files_request: VDBFileListRequest):
     else:
         file_info = [{"file_hash": row[0], "file_name": row[1]} for row in sql_res]
     return VDBFileListResponse(file_info=file_info)
+
 
 def file_delete(file_delete_request: VDBFileDeleteRequest):
     vdb_name = file_delete_request.vdb_name
