@@ -28,7 +28,10 @@ def load_split(files):
     return text_list, hash_lists
 
 
-def get_embed_text(files, embedding_model_name=None):
-    texts, hashes = load_split(files)
+def get_embed_text(files=None, texts=None, embedding_model_name=None):
+    if not texts:
+        texts, hashes = load_split(files)
+    else:
+        hashes = None
     embeddings = EmbedClient.get_embedding(texts, embedding_model_name)
     return texts, hashes, embeddings

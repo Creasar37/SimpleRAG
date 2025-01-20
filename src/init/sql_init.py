@@ -1,6 +1,7 @@
 import sqlite3
 
-def create_vdb_info_table(database_path="database/sqlite.db"):
+
+def create_sql_table(database_path="database/sqlite.db"):
     """
     初始化表
     :param database_path: 数据库文件路径

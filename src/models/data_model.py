@@ -1,6 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 
+
 class HealthCheckResponse(BaseModel):
     status: str
     details: dict = None
@@ -51,4 +52,17 @@ class VDBFileDeleteRequest(BaseModel):
 
 class VDBFileDeleteResponse(BaseModel):
     status: str
+    details: str = None
+
+
+class LLMChatRequest(BaseModel):
+    query: str = None
+    use_rag: bool = True
+    vdb_name: str = None
+    top_k: int = 5
+    params: dict = None
+
+
+class LLMChatResponse(BaseModel):
+    answer: str = None
     details: str = None

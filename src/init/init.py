@@ -2,6 +2,9 @@ from fastapi import FastAPI
 import os
 from src.init.download import download_hf_model
 from conf.config import config
+from src.init.sql_init import create_sql_table
+from src.client.embedding import EmbeddingClient
+from src.client.llm import QwenClient
 
 
 models = {**config["embedding_model"], **config["LLM"]}
@@ -21,11 +24,8 @@ if not os.path.exists("files"):
     os.mkdir("files")
 
 
-from src.init.sql_init import create_vdb_info_table
-from src.client.embedding import EmbeddingClient
-
-
 # 表初始化
-create_vdb_info_table("database/sqlite.db")
+create_sql_table("database/sqlite.db")
 
 EmbedClient = EmbeddingClient()
+QwenChatClient = QwenClient("Qwen2.5-0.5B-Instruct")
