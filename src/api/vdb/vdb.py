@@ -2,14 +2,17 @@ import os
 from typing import List
 from src.models.data_model import (VDBInitRequest, VDBInitResponse, VDBFileAddResponse, VDBListResponse, VDBDropRequest,
                                    VDBDropResponse, VDBFileListRequest, VDBFileListResponse, VDBFileDeleteRequest,
-                                   VDBFileDeleteResponse)
-from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete, lancedb_file_delete
-from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete, milvus_file_delete
+                                   VDBFileDeleteResponse, LLMChatRequest, LLMChatResponse)
+from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete, lancedb_file_delete, lancedb_search
+from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete, milvus_file_delete, milvus_search
 from src.logger.logger import logger
 from fastapi import File, UploadFile
 from src.utils.sql_executor import execute_sql
 from src.api.vdb.documents import get_embed_text
 from src.utils.utils import generate_file_hash
+from src.init.init import QwenChatClient
+from conf.config import config
+import json
 
 
 def vdb_init(init_request: VDBInitRequest):
@@ -159,3 +162,47 @@ def file_delete(file_delete_request: VDBFileDeleteRequest):
     else:
         res = ""
     return VDBFileDeleteResponse(status="success", details=res)
+
+
+def search(vdb_name, text, top_k, params=None):
+    sql_res = execute_sql(
+        query="SELECT type, embedding_model_name, parameters FROM vdb_info WHERE name = ?;",
+        params=(vdb_name, ),
+        fetch_results=True
+    )
+    if not sql_res:
+        raise Exception("vdb_name错误")
+    vdb_type = sql_res[0][0]
+    embedding_model_name = sql_res[0][1]
+    parameters = json.loads(sql_res[0][2]) if sql_res[0][2] else {}
+    vector = get_embed_text(texts=text, embedding_model_name=embedding_model_name)[2]
+    if vdb_type == "milvus":
+        res = milvus_search(vdb_name, vector, top_k, parameters, params)
+    elif vdb_type == "lancedb":
+        params["metric_type"] = "l2"
+        res = lancedb_search(vdb_name, vector, top_k, params)
+    else:
+        raise Exception("vdb_type错误")
+    return res
+
+
+def llm_chat(chat_request: LLMChatRequest):
+    query = chat_request.query
+    use_rag = chat_request.use_rag
+    vdb_name = chat_request.vdb_name
+    top_k = chat_request.top_k
+    params = chat_request.params
+    if use_rag:
+        retrieval_res = search(vdb_name, query, top_k, params)
+        logger.debug(retrieval_res)
+        if not retrieval_res:
+            return LLMChatResponse(answer="", details="向量库中未检索到")
+        related_texts = "\n\n".join([i["text"] for i in retrieval_res])
+        sys_prompt = config["Prompt"]["system"]["v1"]
+        user_prompt = config["Prompt"]["user"]["v1"].format(text=related_texts, question=query)
+        res = QwenChatClient(sys_prompt, user_prompt)
+        return LLMChatResponse(answer=res)
+    else:
+        sys_prompt = config["Prompt"]["system"]["raw"]
+        res = QwenChatClient(sys_prompt, query)
+        return LLMChatResponse(answer=res)

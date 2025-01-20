@@ -38,3 +38,17 @@ Redis:
   port: 6379
   password: ""
   db: 0
+
+# prompt
+Prompt:
+  system:
+    raw: |-
+      You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+    v1: |-
+      您是一个阅读理解专家，通过阅读给出的文本回答问题，如果根据给定的文本无法回答问题，请回答“对不起，我不知道。”。
+  user:
+    v1: |-
+      文本：
+        {text}
+      问题：
+        {question}
