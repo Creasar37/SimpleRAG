@@ -8,14 +8,6 @@ client = MilvusClient("database/milvus.db")
 
 
 def milvus_create(embedding_model, vdb_name, params):
-    sel_res = execute_sql(
-        query="SELECT * FROM vdb_info WHERE name = ?;",
-        params=(vdb_name, ),
-        fetch_results=True
-    )
-    if sel_res:
-        logger.info(f"向量库 {vdb_name} 已存在")
-        raise Exception("向量库已存在")
     embeddings_dim = config["embedding_model"][embedding_model]["dim"]
     if "index_type" in params:
         index_type = params["index_type"]

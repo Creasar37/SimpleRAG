@@ -15,6 +15,7 @@ class EmbeddingClient:
         logger.info("初始化embedding模型")
         for model_name in self.model_names:
             self.load_model(model_name)
+        self.redis_retry = 0
 
     def load_model(self, model_name):
         self.models[model_name] = SentenceTransformer(config["embedding_model"][model_name]["path"])
@@ -34,18 +35,20 @@ class EmbeddingClient:
             else:
                 embedding_list.append(None)
 
-        try:
-            missing_data = [(i, embedding_keys[i]) for i, embedding in enumerate(embedding_list) if embedding is None]
-            if missing_data:
-                index_list, key_list = zip(*missing_data)
-                embeddings = redis_client.mget(key_list)
-                for i in range(len(key_list)):
-                    if embeddings[i]:
-                        embeddings_loaded = pickle.loads(embeddings[i])
-                        embedding_list[index_list[i]] = embeddings_loaded
-                        embedding_cache[key_list[i]] = embeddings_loaded
-        except Exception as e:
-            logger.warning(f"redis读取嵌入缓存失败：{e}")
+        if self.redis_retry <= 3:
+            try:
+                missing_data = [(i, embedding_keys[i]) for i, embedding in enumerate(embedding_list) if embedding is None]
+                if missing_data:
+                    index_list, key_list = zip(*missing_data)
+                    embeddings = redis_client.mget(key_list)
+                    for i in range(len(key_list)):
+                        if embeddings[i]:
+                            embeddings_loaded = pickle.loads(embeddings[i])
+                            embedding_list[index_list[i]] = embeddings_loaded
+                            embedding_cache[key_list[i]] = embeddings_loaded
+            except Exception as e:
+                logger.warning(f"redis读取嵌入缓存失败：{e}")
+                self.redis_retry += 1
 
         missing_data = [(i, embedding_keys[i], texts[i]) for i, embedding in enumerate(embedding_list) if embedding is None]
         if missing_data:
@@ -54,7 +57,13 @@ class EmbeddingClient:
             for i in range(len(text_list)):
                 embedding_list[index_list[i]] = embeddings[i]
                 embedding_cache[key_list[i]] = embeddings[i]
-                redis_client.set(key_list[i], pickle.dumps(embeddings[i]), ex=60*60*24*7)
+                if self.redis_retry <= 3:
+                    try:
+                        redis_client.set(key_list[i], pickle.dumps(embeddings[i]), ex=60*60*24*7)
+                    except Exception as e:
+                        logger.warning(f"redis插入嵌入缓存失败：{e}")
+                        self.redis_retry += 1
             # redis_client.mset({key_list[i]: pickle.dumps(embeddings[i]) for i in range(len(key_list))})
-
+        if self.redis_retry > 3:
+            logger.warning("redis重试次数过多，请检查redis连接")
         return embedding_list
