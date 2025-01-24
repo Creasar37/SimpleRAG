@@ -1,4 +1,5 @@
 import pickle
+from sklearn.metrics.pairwise import paired_distances
 from conf.config import config
 from sentence_transformers import SentenceTransformer
 from src.init.redis_init import redis_client
@@ -10,7 +11,7 @@ embedding_cache = {}
 
 class EmbeddingClient:
     def __init__(self):
-        self.model_names = list(config["embedding_model"].keys())
+        self.model_names = list(config["embedding_model"].keys()) + list(config["ReRanker"].keys())
         self.models = {}
         logger.info("初始化embedding模型")
         for model_name in self.model_names:
@@ -18,7 +19,10 @@ class EmbeddingClient:
         self.redis_retry = 0
 
     def load_model(self, model_name):
-        self.models[model_name] = SentenceTransformer(config["embedding_model"][model_name]["path"])
+        if model_name in config["embedding_model"]:
+            self.models[model_name] = SentenceTransformer(config["embedding_model"][model_name]["path"])
+        else:
+            self.models[model_name] = SentenceTransformer(config["ReRanker"][model_name]["path"])
         logger.info(f"加载模型：{model_name}")
 
     def get_embedding(self, texts, model_name=None):
@@ -67,3 +71,9 @@ class EmbeddingClient:
         if self.redis_retry > 3:
             logger.warning("redis重试次数过多，请检查redis连接")
         return embedding_list
+
+    def rerank(self, model_name, query, texts, metric):
+        query_embedding = self.get_embedding(texts=query, model_name=model_name) * len(texts)
+        text_embeddings = self.get_embedding(texts=texts, model_name=model_name)
+        dist = paired_distances(query_embedding, text_embeddings, metric=metric)
+        return dist.tolist()

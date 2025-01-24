@@ -35,6 +35,12 @@ embedding_model:
     path: models/embedding/Dmeta-embedding-zh-small
     dim: 768
 
+# 重排模型参数
+ReRanker:
+  ternary-weight-embedding:
+    hf_name: malenia1/ternary-weight-embedding
+    path: models/ReRanker/ternary-weight-embedding
+
 # LLM参数
 LLM:
   Qwen2.5-0.5B-Instruct:

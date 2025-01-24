@@ -10,7 +10,7 @@ from fastapi import File, UploadFile, Form
 from src.utils.sql_executor import execute_sql
 from src.api.vdb.documents import get_embed_text
 from src.utils.utils import generate_file_hash
-from src.init.init import QwenChatClient
+from src.init.init import QwenChatClient, EmbedClient
 from conf.config import config
 import json
 import platform
@@ -214,7 +214,13 @@ def llm_chat(chat_request: LLMChatRequest):
     use_rag = chat_request.use_rag
     vdb_name = chat_request.vdb_name
     top_k = chat_request.top_k
+    use_rerank = chat_request.use_rerank
+    reranker = chat_request.reranker
+    rerank_metric = chat_request.rerank_metric
+    rerank_top_k = chat_request.rerank_top_k
     params = chat_request.params
+    if top_k < rerank_top_k:
+        return LLMChatResponse(answer="", details="rerank_top_k不能大于top_k")
     if params is None:
         params = {}
     if use_rag:
@@ -222,7 +228,21 @@ def llm_chat(chat_request: LLMChatRequest):
         logger.debug(retrieval_res)
         if not retrieval_res:
             return LLMChatResponse(answer="", details="向量库中未检索到")
-        related_texts = "\n\n".join([i["text"] for i in retrieval_res])
+        related_texts = [i["text"] for i in retrieval_res]
+        rerank_top_k = min(rerank_top_k, len(related_texts))
+        if use_rerank:
+            dist = EmbedClient.rerank(reranker, query, related_texts, rerank_metric)
+            if rerank_metric in ["cosine", "dot"]:
+                sim = [1 - i for i in dist]
+                _, reranked_texts = zip(*sorted(zip(sim, related_texts), reverse=True))
+            elif rerank_metric == "l2":
+                _, reranked_texts = zip(*sorted(zip(dist, related_texts)))
+            else:
+                return LLMChatResponse(answer="", details="rerank_metric错误")
+        else:
+            reranked_texts = related_texts
+        logger.debug(reranked_texts)
+        related_texts = "\n\n".join(reranked_texts[:rerank_top_k])
         sys_prompt = config["Prompt"]["system"]["v1"]
         user_prompt = config["Prompt"]["user"]["v1"].format(text=related_texts, question=query)
         res = QwenChatClient(sys_prompt, user_prompt)

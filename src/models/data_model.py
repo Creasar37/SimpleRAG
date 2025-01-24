@@ -60,6 +60,10 @@ class LLMChatRequest(BaseModel):
     use_rag: bool = True
     vdb_name: str = None
     top_k: int = 5
+    use_rerank: bool = False
+    reranker: str = None
+    rerank_metric: str = "cosine"
+    rerank_top_k: int = 5
     params: dict = None
 
 

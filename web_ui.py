@@ -6,23 +6,38 @@ from src.web_ui.req import chat_request, list_vdb, create_vdb, add_file, drop_vd
 with gr.Blocks() as app:
     gr.Markdown("SimpleRAG")
     with gr.Tab("LLM对话"):
-        llm_name = gr.Dropdown(choices=list(config["LLM"].keys()), label="选择llm_model", interactive=True)
+        llm_name = gr.Dropdown(choices=list(config["LLM"].keys()), label="选择大模型", interactive=True)
         use_rag = gr.Checkbox(label="使用RAG", value=True)
         with gr.Row():
-            vdb_name_chat = gr.Textbox(label="向量库名称", placeholder="请输入向量库名称")
-            top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1)
+            vdb_name_chat = list_vdb(4)
+            vdb_name_chat_update_button = gr.Button(value="刷新")
+            vdb_name_chat_update_button.click(list_vdb, inputs=None, outputs=vdb_name_chat)
+            top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1, scale=5)
+        use_rerank = gr.Checkbox(label="检索重排", value=False)
+        with gr.Row(visible=False) as rerank_row:
+            reranker = gr.Dropdown(choices=list(config["ReRanker"].keys()), label="选择重排模型", interactive=True)
+            rerank_metric = gr.Textbox(label="重排评估指标", placeholder="请输入重排评估指标", value="cosine")
+            rerank_top_k = gr.Slider(label="重排top_k", minimum=1, maximum=10, value=5, step=1)
+        use_rerank.change(
+            fn=lambda x: gr.update(visible=x),
+            inputs=use_rerank,
+            outputs=rerank_row
+        )
         params_chat = gr.Textbox(label="其他参数", placeholder="请输入参数，json格式")
         chat_history = gr.Chatbot(label="聊天记录", type="messages")
         query = gr.Textbox(label="输入框", placeholder="请输入问题")
         clear = gr.ClearButton([chat_history, query])
         query.submit(
             chat_request,
-            inputs=[use_rag, vdb_name_chat, top_k, params_chat, query, chat_history],
+            inputs=[
+                use_rag, vdb_name_chat, top_k, use_rerank, reranker, rerank_metric, rerank_top_k, params_chat,
+                query, chat_history
+            ],
             outputs=[query, chat_history]
         )
     with gr.Tab("向量库管理"):
         with gr.Row():
-            vdb_name = list_vdb()
+            vdb_name = list_vdb(9)
             with gr.Column(min_width=0):
                 update_button = gr.Button(value="刷新")
                 create_button = gr.Button(value="创建向量库")
@@ -36,7 +51,7 @@ with gr.Blocks() as app:
                     choices=list(config["embedding_model"].keys()), label="选择embedding_model", interactive=True
                 )
                 vdb_name_create = gr.Textbox(label="向量库名称", placeholder="请输入向量库名称")
-                vdb_type = gr.Dropdown(choices=["milvus", "lancedb"], label="选择vdb_type", interactive=True)
+                vdb_type = gr.Dropdown(choices=["milvus", "lancedb"], label="选择向量库类型", interactive=True)
             with gr.Row():
                 params_create = gr.Textbox(label="其他参数", placeholder="请输入参数，json格式", scale=20)
             create_res = gr.Textbox(label="创建结果", visible=False, interactive=False)

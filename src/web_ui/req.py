@@ -8,7 +8,7 @@ from conf.config import config
 base_url = f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}"
 
 
-def chat_request(use_rag, vdb_name, top_k, params, msg, history):
+def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, rerank_top_k, params, msg, history):
     if params == "":
         params = "{}"
     params = json.loads(params)
@@ -17,6 +17,10 @@ def chat_request(use_rag, vdb_name, top_k, params, msg, history):
         "use_rag": use_rag,
         "vdb_name": vdb_name,
         "top_k": top_k,
+        "use_rerank": use_rerank,
+        "reranker": reranker,
+        "rerank_metric": rerank_metric,
+        "rerank_top_k": rerank_top_k,
         "params": params
     }
     ans = requests.post(f"{base_url}/v1/llm/chat", json=data).json()
@@ -33,9 +37,9 @@ def chat_request(use_rag, vdb_name, top_k, params, msg, history):
     return "", history
 
 
-def list_vdb():
+def list_vdb(scale=9):
     ans = requests.get(f"{base_url}/v1/vdb/list").json()["vdb_name"]
-    return gr.Dropdown(choices=ans, label="选择向量库", interactive=True, scale=9)
+    return gr.Dropdown(choices=ans, label="选择向量库", interactive=True, scale=scale)
 
 
 def create_vdb(embedding_model, vdb_name, vdb_type, params):
