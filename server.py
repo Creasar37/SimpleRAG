@@ -1,4 +1,6 @@
 from src.init.init import app
+import uvicorn
+from conf.config import config
 from src.models.data_model import (HealthCheckResponse, VDBListResponse, VDBInitResponse, VDBFileAddResponse,
                                    VDBDropResponse, VDBFileListResponse, VDBFileDeleteResponse, LLMChatResponse)
 from src.api.utils import healthcheck
@@ -13,3 +15,7 @@ app.post("/v1/vdb/drop", response_model=VDBDropResponse, summary="删除向量�
 app.post("/v1/vdb/file/list", response_model=VDBFileListResponse, summary="获取向量库文件列表")(vdb_list_files)
 app.post("/v1/vdb/file/delete", response_model=VDBFileDeleteResponse, summary="删除向量库文件")(file_delete)
 app.post("/v1/llm/chat", response_model=LLMChatResponse, summary="LLM对话")(llm_chat)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host=config["server"]["fastapi"]["host"], port=config["server"]["fastapi"]["port"])

@@ -1,3 +1,12 @@
+# 启动地址
+server:
+  fastapi:
+    host: localhost
+    port: 8320
+  web_ui:
+    host: localhost
+    port: 8321
+
 # Milvus默认参数
 Milvus:
   default_index_type: FLAT

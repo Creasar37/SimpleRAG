@@ -2,9 +2,10 @@ import requests
 import json
 import gradio as gr
 import os
+from conf.config import config
 
 
-base_url = "http://localhost:21235"
+base_url = f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}"
 
 
 def chat_request(use_rag, vdb_name, top_k, params, msg, history):
@@ -70,6 +71,8 @@ def drop_vdb(vdb_name):
 
 
 def file_list(vdb_name):
+    if not vdb_name:
+        return []
     res = requests.post(f"{base_url}/v1/vdb/file/list", json={"vdb_name": vdb_name}).json()
     return [i["file_name"] for i in res["file_info"]]
 

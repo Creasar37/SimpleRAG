@@ -115,4 +115,4 @@ with gr.Blocks() as app:
             outputs=delete_res
         )
 
-app.launch()
+app.launch(server_name=config["server"]["web_ui"]["host"], server_port=config["server"]["web_ui"]["port"])

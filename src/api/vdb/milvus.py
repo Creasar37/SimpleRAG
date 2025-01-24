@@ -3,8 +3,13 @@ from conf.config import config
 from src.logger.logger import logger
 from src.utils.sql_executor import execute_sql
 import json
+import platform
 
-client = MilvusClient("database/milvus.db")
+
+if platform.system() == "Windows":
+    logger.warning("Milvus Lite不支持Windows，请使用LanceDB")
+else:
+    client = MilvusClient("database/milvus.db")
 
 
 def milvus_create(embedding_model, vdb_name, params):
