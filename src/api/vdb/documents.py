@@ -13,7 +13,7 @@ def load_split(files):
             "\n\n", "\n", " ", "。", "，", "、", "？", "！", "；", "：",
             ".", ",", "!", "?", ";", ":", "\u3000", "\u200b", ""
         ],
-        chunk_size=500,
+        chunk_size=200,
         chunk_overlap=50,
         length_function=len
     )
