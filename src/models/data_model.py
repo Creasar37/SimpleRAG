@@ -20,12 +20,12 @@ class VDBInitRequest(BaseModel):
 
 class VDBInitResponse(BaseModel):
     status: str
-    details: str = None
+    details: str = ""
 
 
 class VDBFileAddResponse(BaseModel):
     status: str
-    details: str = None
+    details: str = ""
 
 
 class VDBDropRequest(BaseModel):
@@ -34,7 +34,7 @@ class VDBDropRequest(BaseModel):
 
 class VDBDropResponse(BaseModel):
     status: str
-    details: str = None
+    details: str = ""
 
 
 class VDBFileListRequest(BaseModel):
@@ -52,7 +52,7 @@ class VDBFileDeleteRequest(BaseModel):
 
 class VDBFileDeleteResponse(BaseModel):
     status: str
-    details: str = None
+    details: str = ""
 
 
 class LLMChatRequest(BaseModel):
@@ -60,9 +60,13 @@ class LLMChatRequest(BaseModel):
     use_rag: bool = True
     vdb_name: str = None
     top_k: int = 5
+    use_rerank: bool = False
+    reranker: str = None
+    rerank_metric: str = "cosine"
+    rerank_top_k: int = 5
     params: dict = None
 
 
 class LLMChatResponse(BaseModel):
     answer: str = None
-    details: str = None
+    details: str = ""

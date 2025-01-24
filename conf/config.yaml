@@ -1,3 +1,12 @@
+# 启动地址
+server:
+  fastapi:
+    host: localhost
+    port: 8320
+  web_ui:
+    host: localhost
+    port: 8321
+
 # Milvus默认参数
 Milvus:
   default_index_type: FLAT
@@ -25,6 +34,12 @@ embedding_model:
     hf_name: DMetaSoul/Dmeta-embedding-zh-small
     path: models/embedding/Dmeta-embedding-zh-small
     dim: 768
+
+# 重排模型参数
+ReRanker:
+  ternary-weight-embedding:
+    hf_name: malenia1/ternary-weight-embedding
+    path: models/ReRanker/ternary-weight-embedding
 
 # LLM参数
 LLM:

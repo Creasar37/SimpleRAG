@@ -7,7 +7,7 @@ from src.client.embedding import EmbeddingClient
 from src.client.llm import QwenClient
 
 
-models = {**config["embedding_model"], **config["LLM"]}
+models = {**config["embedding_model"], **config["ReRanker"], **config["LLM"]}
 hf_name_list = [models[model]["hf_name"] for model in models]
 model_path_list = [models[model]["path"] for model in models]
 

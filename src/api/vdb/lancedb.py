@@ -9,15 +9,7 @@ import uuid
 db = lancedb.connect("database/lancedb")
 
 
-def lancedb_create(embedding_model, vdb_name, params):
-    sel_res = execute_sql(
-        query="SELECT * FROM vdb_info WHERE name = ?;",
-        params=(vdb_name, ),
-        fetch_results=True
-    )
-    if sel_res:
-        logger.info(f"向量库 {vdb_name} 已存在")
-        raise Exception("向量库已存在")
+def lancedb_create(embedding_model, vdb_name):
     embeddings_dim = config["embedding_model"][embedding_model]["dim"]
     schema = pa.schema(
         [

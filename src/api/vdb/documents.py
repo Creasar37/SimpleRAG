@@ -5,7 +5,7 @@ from src.utils.utils import generate_file_hash
 
 
 def load_split(files):
-    loader = UnstructuredLoader(files)
+    loader = UnstructuredLoader(files, chunking_strategy="basic", max_characters=1000000, include_orig_elements=False)
     docs = loader.load()
     hash_dict = {f"{file}": generate_file_hash(file) for file in files}
     text_splitter = RecursiveCharacterTextSplitter(
@@ -13,7 +13,7 @@ def load_split(files):
             "\n\n", "\n", " ", "。", "，", "、", "？", "！", "；", "：",
             ".", ",", "!", "?", ";", ":", "\u3000", "\u200b", ""
         ],
-        chunk_size=500,
+        chunk_size=200,
         chunk_overlap=50,
         length_function=len
     )
