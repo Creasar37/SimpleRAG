@@ -31,6 +31,8 @@ class QwenClient(LLMClient):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForCausalLM.from_pretrained(self.model_path, torch_dtype="auto").to(device)
         logger.info(f"加载模型：{self.model_name}")
+        if device == "cpu":
+            logger.warning("当前LLM加载设备为CPU，生成速度会比较慢")
 
     def __call__(self, sys_prompt, user_prompt):
         messages = [

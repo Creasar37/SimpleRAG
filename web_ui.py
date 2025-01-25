@@ -15,7 +15,7 @@ with gr.Blocks() as app:
             top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1, scale=5)
         use_rerank = gr.Checkbox(label="检索重排", value=False)
         with gr.Row(visible=False) as rerank_row:
-            reranker = gr.Dropdown(choices=list(config["ReRanker"].keys()), label="选择重排模型", interactive=True)
+            reranker = gr.Dropdown(choices=list(config["embedding_model"].keys()), label="选择重排模型", interactive=True)
             rerank_metric = gr.Textbox(label="重排评估指标", placeholder="请输入重排评估指标", value="cosine")
             rerank_top_k = gr.Slider(label="重排top_k", minimum=1, maximum=10, value=5, step=1)
         use_rerank.change(
