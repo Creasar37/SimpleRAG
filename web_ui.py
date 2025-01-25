@@ -122,8 +122,8 @@ with gr.Blocks() as app:
                 delete_button = gr.Button(value="删除文件")
         delete_res = gr.Textbox(label="删除结果", visible=False, interactive=False)
         update_file_list_button.click(
-            fn=lambda: gr.update(choices=file_list(vdb_name.value)),
-            inputs=None,
+            fn=lambda x: gr.update(choices=file_list(x)),
+            inputs=vdb_name,
             outputs=file_name
         )
         delete_button.click(
