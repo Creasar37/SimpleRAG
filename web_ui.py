@@ -8,22 +8,28 @@ with gr.Blocks() as app:
     with gr.Tab("LLM对话"):
         llm_name = gr.Dropdown(choices=list(config["LLM"].keys()), label="选择大模型", interactive=True)
         use_rag = gr.Checkbox(label="使用RAG", value=True)
-        with gr.Row():
-            vdb_name_chat = list_vdb(4)
-            vdb_name_chat_update_button = gr.Button(value="刷新")
-            vdb_name_chat_update_button.click(list_vdb, inputs=None, outputs=vdb_name_chat)
-            top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1, scale=5)
-        use_rerank = gr.Checkbox(label="检索重排", value=False)
-        with gr.Row(visible=False) as rerank_row:
-            reranker = gr.Dropdown(choices=list(config["embedding_model"].keys()), label="选择重排模型", interactive=True)
-            rerank_metric = gr.Textbox(label="重排评估指标", placeholder="请输入重排评估指标", value="cosine")
-            rerank_top_k = gr.Slider(label="重排top_k", minimum=1, maximum=10, value=5, step=1)
-        use_rerank.change(
+        with gr.Group() as rag_group:
+            with gr.Row():
+                vdb_name_chat = list_vdb(4)
+                vdb_name_chat_update_button = gr.Button(value="刷新")
+                vdb_name_chat_update_button.click(list_vdb, inputs=None, outputs=vdb_name_chat)
+                top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1, scale=5)
+            use_rerank = gr.Checkbox(label="检索重排", value=False)
+            with gr.Row(visible=False) as rerank_row:
+                reranker = gr.Dropdown(choices=list(config["embedding_model"].keys()), label="选择重排模型", interactive=True)
+                rerank_metric = gr.Textbox(label="重排评估指标", placeholder="请输入重排评估指标", value="cosine")
+                rerank_top_k = gr.Slider(label="重排top_k", minimum=1, maximum=10, value=5, step=1)
+            use_rerank.change(
+                fn=lambda x: gr.update(visible=x),
+                inputs=use_rerank,
+                outputs=rerank_row
+            )
+            params_chat = gr.Textbox(label="其他参数", placeholder="请输入参数，json格式")
+        use_rag.change(
             fn=lambda x: gr.update(visible=x),
-            inputs=use_rerank,
-            outputs=rerank_row
+            inputs=use_rag,
+            outputs=rag_group
         )
-        params_chat = gr.Textbox(label="其他参数", placeholder="请输入参数，json格式")
         chat_history = gr.Chatbot(label="聊天记录", type="messages")
         query = gr.Textbox(label="输入框", placeholder="请输入问题")
         clear = gr.ClearButton([chat_history, query])
