@@ -22,7 +22,7 @@ def vdb_init(init_request: VDBInitRequest):
     vdb_type = init_request.vdb_type
     params = init_request.params
     if platform.system() == "Windows" and vdb_type == "milvus":
-        logger.warning("Milvus Lite不支持Windows，请使用LanceDB")
+        logger.warning("Milvus Lite不支持Windows，向量库类型请使用LanceDB")
         return VDBInitResponse(status="error", details="Milvus Lite不支持Windows，请使用LanceDB")
     logger.info(f"开始创建向量库{vdb_name}")
     sel_res = execute_sql(

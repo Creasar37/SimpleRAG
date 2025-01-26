@@ -8,22 +8,37 @@ with gr.Blocks() as app:
     with gr.Tab("LLM对话"):
         llm_name = gr.Dropdown(choices=list(config["LLM"].keys()), label="选择大模型", interactive=True)
         use_rag = gr.Checkbox(label="使用RAG", value=True)
-        with gr.Row():
-            vdb_name_chat = list_vdb(4)
-            vdb_name_chat_update_button = gr.Button(value="刷新")
-            vdb_name_chat_update_button.click(list_vdb, inputs=None, outputs=vdb_name_chat)
-            top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1, scale=5)
-        use_rerank = gr.Checkbox(label="检索重排", value=False)
-        with gr.Row(visible=False) as rerank_row:
-            reranker = gr.Dropdown(choices=list(config["ReRanker"].keys()), label="选择重排模型", interactive=True)
-            rerank_metric = gr.Textbox(label="重排评估指标", placeholder="请输入重排评估指标", value="cosine")
-            rerank_top_k = gr.Slider(label="重排top_k", minimum=1, maximum=10, value=5, step=1)
-        use_rerank.change(
+        with gr.Group() as rag_group:
+            with gr.Row():
+                vdb_name_chat = gr.Dropdown(choices=[], label="选择向量库", interactive=True, scale=4)
+                app.load(
+                    fn=lambda: gr.update(choices=list_vdb()),
+                    inputs=None,
+                    outputs=vdb_name_chat
+                )
+                vdb_name_chat_update_button = gr.Button(value="刷新")
+                vdb_name_chat_update_button.click(
+                    fn=lambda: gr.update(choices=list_vdb()),
+                    inputs=None,
+                    outputs=vdb_name_chat
+                )
+                top_k = gr.Slider(label="top_k", minimum=1, maximum=10, value=5, step=1, scale=5)
+            use_rerank = gr.Checkbox(label="检索重排", value=False)
+            with gr.Row(visible=False) as rerank_row:
+                reranker = gr.Dropdown(choices=list(config["embedding_model"].keys()), label="选择重排模型", interactive=True)
+                rerank_metric = gr.Textbox(label="重排评估指标", placeholder="请输入重排评估指标", value="cosine")
+                rerank_top_k = gr.Slider(label="重排top_k", minimum=1, maximum=10, value=5, step=1)
+            use_rerank.change(
+                fn=lambda x: gr.update(visible=x),
+                inputs=use_rerank,
+                outputs=rerank_row
+            )
+            params_chat = gr.Textbox(label="其他参数", placeholder="请输入参数，json格式")
+        use_rag.change(
             fn=lambda x: gr.update(visible=x),
-            inputs=use_rerank,
-            outputs=rerank_row
+            inputs=use_rag,
+            outputs=rag_group
         )
-        params_chat = gr.Textbox(label="其他参数", placeholder="请输入参数，json格式")
         chat_history = gr.Chatbot(label="聊天记录", type="messages")
         query = gr.Textbox(label="输入框", placeholder="请输入问题")
         clear = gr.ClearButton([chat_history, query])
@@ -37,7 +52,12 @@ with gr.Blocks() as app:
         )
     with gr.Tab("向量库管理"):
         with gr.Row():
-            vdb_name = list_vdb(9)
+            vdb_name = gr.Dropdown(choices=[], label="选择向量库", interactive=True, scale=9)
+            app.load(
+                fn=lambda: gr.update(choices=list_vdb()),
+                inputs=None,
+                outputs=vdb_name
+            )
             with gr.Column(min_width=0):
                 update_button = gr.Button(value="刷新")
                 create_button = gr.Button(value="创建向量库")
@@ -72,7 +92,11 @@ with gr.Blocks() as app:
                 inputs=None,
                 outputs=create_group
             )
-        update_button.click(list_vdb, inputs=None, outputs=vdb_name)
+        update_button.click(
+            fn=lambda: gr.update(choices=list_vdb()),
+            inputs=None,
+            outputs=vdb_name_chat
+        )
         create_button.click(
             fn=lambda: gr.update(visible=True),
             inputs=None,
@@ -109,15 +133,19 @@ with gr.Blocks() as app:
             outputs=add_res
         )
         with gr.Row():
-            file_names = file_list(vdb_name.value)
-            file_name = gr.Dropdown(choices=file_names, label="选择文件名", interactive=True, multiselect=True, scale=9)
+            file_name = gr.Dropdown(choices=[], label="选择文件名", interactive=True, multiselect=True, scale=9)
+            app.load(
+                fn=lambda x: gr.update(choices=file_list(x)),
+                inputs=vdb_name,
+                outputs=file_name
+            )
             with gr.Column(min_width=0):
                 update_file_list_button = gr.Button(value="刷新")
                 delete_button = gr.Button(value="删除文件")
         delete_res = gr.Textbox(label="删除结果", visible=False, interactive=False)
         update_file_list_button.click(
-            fn=lambda: gr.update(choices=file_list(vdb_name.value)),
-            inputs=None,
+            fn=lambda x: gr.update(choices=file_list(x)),
+            inputs=vdb_name,
             outputs=file_name
         )
         delete_button.click(
@@ -130,4 +158,7 @@ with gr.Blocks() as app:
             outputs=delete_res
         )
 
-app.launch(server_name=config["server"]["web_ui"]["host"], server_port=config["server"]["web_ui"]["port"])
+if __name__ == "__main__":
+    app.launch(
+        server_name=config["server"]["web_ui"]["host"], server_port=config["server"]["web_ui"]["port"], inbrowser=True
+    )

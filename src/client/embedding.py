@@ -11,7 +11,7 @@ embedding_cache = {}
 
 class EmbeddingClient:
     def __init__(self):
-        self.model_names = list(config["embedding_model"].keys()) + list(config["ReRanker"].keys())
+        self.model_names = list(config["embedding_model"].keys())
         self.models = {}
         logger.info("初始化embedding模型")
         for model_name in self.model_names:

@@ -1,5 +1,6 @@
 import hashlib
 
+
 def generate_file_hash(file_path):
     """生成文件内容的哈希码（使用 SHA256）"""
     sha256_hash = hashlib.sha256()

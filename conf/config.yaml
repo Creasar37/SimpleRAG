@@ -34,12 +34,10 @@ embedding_model:
     hf_name: DMetaSoul/Dmeta-embedding-zh-small
     path: models/embedding/Dmeta-embedding-zh-small
     dim: 768
-
-# 重排模型参数
-ReRanker:
-  ternary-weight-embedding:
-    hf_name: malenia1/ternary-weight-embedding
-    path: models/ReRanker/ternary-weight-embedding
+  gte-small-zh:
+    hf_name: thenlper/gte-small-zh
+    path: models/embedding/gte-small-zh
+    dim: 512
 
 # LLM参数
 LLM:
