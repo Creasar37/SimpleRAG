@@ -37,9 +37,9 @@ def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, 
     return "", history
 
 
-def list_vdb(scale=9):
+def list_vdb():
     ans = requests.get(f"{base_url}/v1/vdb/list").json()["vdb_name"]
-    return gr.Dropdown(choices=ans, label="选择向量库", interactive=True, scale=scale)
+    return ans
 
 
 def create_vdb(embedding_model, vdb_name, vdb_type, params):
