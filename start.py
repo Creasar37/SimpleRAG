@@ -1,6 +1,8 @@
 import subprocess
 import time
 import sys
+from src.utils.utils import fastapi_test
+from conf.config import config
 
 
 def run_backend():
@@ -23,11 +25,11 @@ def run_frontend():
 
 if __name__ == "__main__":
     run_backend()
+    fastapi_test(f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}")
     run_frontend()
 
-    # 阻塞主进程
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n已终止服务")
+        print("已终止服务")
