@@ -10,7 +10,7 @@ from fastapi import File, UploadFile, Form
 from src.utils.sql_executor import execute_sql
 from src.api.vdb.documents import get_embed_text
 from src.utils.utils import generate_file_hash
-from src.init.init import QwenChatClient, EmbedClient
+from src.init.init import LLM, EmbedClient
 from conf.config import config
 import json
 import platform
@@ -211,6 +211,7 @@ def search(vdb_name, text, top_k, params):
 
 def llm_chat(chat_request: LLMChatRequest):
     query = chat_request.query
+    llm = chat_request.llm
     use_rag = chat_request.use_rag
     vdb_name = chat_request.vdb_name
     top_k = chat_request.top_k

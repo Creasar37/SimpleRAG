@@ -1,8 +1,8 @@
 import torch
 from conf.config import config
 from src.logger.logger import logger
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from threading import Thread
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 

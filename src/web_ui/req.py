@@ -8,12 +8,14 @@ from conf.config import config
 base_url = f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}"
 
 
-def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, rerank_top_k, params, msg, history):
+def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, rerank_top_k, params,
+                 msg, history, llm):
     if params == "":
         params = "{}"
     params = json.loads(params)
     data = {
         "query": msg,
+        "llm": llm,
         "use_rag": use_rag,
         "vdb_name": vdb_name,
         "top_k": top_k,

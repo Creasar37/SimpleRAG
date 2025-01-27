@@ -46,7 +46,7 @@ with gr.Blocks() as app:
             chat_request,
             inputs=[
                 use_rag, vdb_name_chat, top_k, use_rerank, reranker, rerank_metric, rerank_top_k, params_chat,
-                query, chat_history
+                query, chat_history, llm_name
             ],
             outputs=[query, chat_history]
         )
