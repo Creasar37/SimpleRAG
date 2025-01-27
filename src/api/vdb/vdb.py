@@ -7,6 +7,7 @@ from src.api.vdb.lancedb import lancedb_create, lancedb_insert, lancedb_delete, 
 from src.api.vdb.milvus import milvus_create, milvus_insert, milvus_delete, milvus_file_delete, milvus_search
 from src.logger.logger import logger
 from fastapi import File, UploadFile, Form
+from fastapi.responses import StreamingResponse
 from src.utils.sql_executor import execute_sql
 from src.api.vdb.documents import get_embed_text
 from src.utils.utils import generate_file_hash
@@ -212,6 +213,7 @@ def search(vdb_name, text, top_k, params):
 def llm_chat(chat_request: LLMChatRequest):
     query = chat_request.query
     llm = chat_request.llm
+    stream = chat_request.stream
     use_rag = chat_request.use_rag
     vdb_name = chat_request.vdb_name
     top_k = chat_request.top_k
@@ -246,9 +248,17 @@ def llm_chat(chat_request: LLMChatRequest):
         related_texts = "\n\n".join(reranked_texts[:rerank_top_k])
         sys_prompt = config["Prompt"]["system"]["v1"]
         user_prompt = config["Prompt"]["user"]["v1"].format(text=related_texts, question=query)
-        res = QwenChatClient(sys_prompt, user_prompt)
-        return LLMChatResponse(answer=res)
+        if stream:
+            res = LLM[llm](sys_prompt, user_prompt, stream=True)
+            return StreamingResponse(res)
+        else:
+            res = LLM[llm](sys_prompt, user_prompt, stream=False)
+            return LLMChatResponse(answer=res)
     else:
         sys_prompt = config["Prompt"]["system"]["raw"]
-        res = QwenChatClient(sys_prompt, query)
-        return LLMChatResponse(answer=res)
+        if stream:
+            res = LLM[llm](sys_prompt, query, stream=True)
+            return StreamingResponse(res)
+        else:
+            res = LLM[llm](sys_prompt, query, stream=False)
+            return LLMChatResponse(answer=res)

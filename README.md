@@ -5,8 +5,8 @@
 ## 🚀 功能特性
 
 - **📚 向量库管理**:
-  - ✔️ 创建/删除向量库（支持Milvus和LanceDB）
-  - ✔️ 支持向量库索引等参数，参数通过sqlite数据库进行持久化
+  - 🛠️ 创建/删除向量库（支持Milvus和LanceDB）
+  - 💾 支持向量库索引等参数，参数通过sqlite数据库进行持久化
   - 📁 文件上传与管理，通过sqlite保存文件哈希值确保文件不重复
   - ⚡ 嵌入时通过本地缓存和redis缓存加快速度
 
@@ -16,6 +16,7 @@
 
 - **💬 LLM对话**:
   - 🤖 支持选择大模型并启用RAG增强
+  - 🌊 支持流式输出
 
 ## 🛠️ 快速开始
 
@@ -46,10 +47,10 @@ python start.py
    - 确认PyTorch是否正确安装GPU版本
 
 2. **🆕 添加/更换模型**  
-   - 📌 需要在`conf/config.yaml`加入模型参数
-   - 🔧 嵌入模型仅支持sentence-transformers加载的模型，其他模型需修改`src/client/embedding.py`代码
-   - 💻 LLM可通过在`src/client/LLM.py`添加对应类来添加
-   - 🚀 项目启动时自动加载配置中的模型
+   - 需要在`conf/config.yaml`加入模型参数
+   - 嵌入模型仅支持sentence-transformers加载的模型，其他模型需修改`src/client/embedding.py`代码
+   - LLM可通过在`src/client/LLM.py`添加对应类来添加
+   - 项目启动时自动加载配置中的模型
 
 ## 📜 许可证
 [MIT License](LICENSE)

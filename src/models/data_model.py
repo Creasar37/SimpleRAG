@@ -58,8 +58,9 @@ class VDBFileDeleteResponse(BaseModel):
 class LLMChatRequest(BaseModel):
     query: str = None
     llm: str = "Qwen2.5-0.5B-Instruct"
+    stream: bool = False
     use_rag: bool = True
-    vdb_name: str = None
+    vdb_name: str | None
     top_k: int = 5
     use_rerank: bool = False
     reranker: str = None

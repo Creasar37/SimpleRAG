@@ -34,7 +34,7 @@ class QwenClient(LLMClient):
         if device == "cpu":
             logger.warning("当前LLM加载设备为CPU，生成速度会比较慢")
 
-    def __call__(self, sys_prompt, user_prompt):
+    def __call__(self, sys_prompt, user_prompt, stream=False):
         messages = [
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": user_prompt}
@@ -45,14 +45,21 @@ class QwenClient(LLMClient):
             add_generation_prompt=True,
         )
         model_inputs = self.tokenizer([text], return_tensors="pt").to(self.model.device)
+        if not stream:
+            generated_ids = self.model.generate(
+                **model_inputs,
+                max_new_tokens=512,
+            )
+            generated_ids = [
+                output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+            ]
+            response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-        generated_ids = self.model.generate(
-            **model_inputs,
-            max_new_tokens=512,
-        )
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
-        response = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            return response
+        else:
+            streamer = TextIteratorStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
+            generation_kwargs = dict(model_inputs, streamer=streamer, max_new_tokens=512)
+            thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
+            thread.start()
 
-        return response
+            return streamer

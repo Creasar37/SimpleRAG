@@ -14,7 +14,7 @@ app.post("/v1/vdb/file/add", response_model=VDBFileAddResponse, summary="向量�
 app.post("/v1/vdb/drop", response_model=VDBDropResponse, summary="删除向量库")(vdb_drop)
 app.post("/v1/vdb/file/list", response_model=VDBFileListResponse, summary="获取向量库文件列表")(vdb_list_files)
 app.post("/v1/vdb/file/delete", response_model=VDBFileDeleteResponse, summary="删除向量库文件")(file_delete)
-app.post("/v1/llm/chat", response_model=LLMChatResponse, summary="LLM对话")(llm_chat)
+app.post("/v1/llm/chat", summary="LLM对话")(llm_chat)
 
 
 if __name__ == "__main__":
