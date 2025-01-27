@@ -29,3 +29,6 @@ create_sql_table("database/sqlite.db")
 
 EmbedClient = EmbeddingClient()
 QwenChatClient = QwenClient("Qwen2.5-0.5B-Instruct")
+LLM = {
+    "Qwen2.5-0.5B-Instruct": QwenChatClient
+}

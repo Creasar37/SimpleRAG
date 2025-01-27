@@ -1,4 +1,6 @@
 import hashlib
+import time
+import requests
 
 
 def generate_file_hash(file_path):
@@ -8,3 +10,17 @@ def generate_file_hash(file_path):
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
+
+def fastapi_test(base_url, retry=10):
+    time.sleep(5)
+    n = 0
+    while n <= retry:
+        try:
+            requests.get(f"{base_url}/v1/healthcheck")
+            break
+        except Exception:
+            time.sleep(1)
+            n += 1
+    else:
+        raise Exception("FastAPI启动超时")
