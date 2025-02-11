@@ -40,7 +40,8 @@ def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, 
                 except json.JSONDecodeError:
                     history[-1]["content"] += chunk.decode()
                     yield "", history
-            history[-1]["content"] += chunk.decode()
+            else:
+                history[-1]["content"] += chunk.decode()
             yield "", history
 
 

@@ -95,7 +95,7 @@ with gr.Blocks() as app:
         update_button.click(
             fn=lambda: gr.update(choices=list_vdb()),
             inputs=None,
-            outputs=vdb_name_chat
+            outputs=vdb_name
         )
         create_button.click(
             fn=lambda: gr.update(visible=True),
