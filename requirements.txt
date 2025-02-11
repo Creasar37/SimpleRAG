@@ -15,4 +15,4 @@ gradio~=5.12.0
 pyyaml~=6.0.2
 uvicorn~=0.34.0
 langchain_unstructured~=0.1.5
-unstructured~=0.16.13
+unstructured[all-docs]~=0.16.13
