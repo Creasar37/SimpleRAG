@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import sys
@@ -24,8 +25,12 @@ def run_frontend():
 
 
 if __name__ == "__main__":
+    retry_times = 30
+    if "models" not in os.listdir():
+        retry_times = 500
     run_backend()
-    fastapi_test(f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}")
+    fastapi_test(f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}",
+                 retry=retry_times)
     run_frontend()
 
     try:

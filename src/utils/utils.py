@@ -20,7 +20,7 @@ def fastapi_test(base_url, retry=30):
             requests.get(f"{base_url}/v1/healthcheck")
             break
         except Exception:
-            time.sleep(1)
+            time.sleep(5)
             n += 1
     else:
         raise Exception("FastAPI启动超时")
