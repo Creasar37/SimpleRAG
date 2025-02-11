@@ -8,6 +8,7 @@ colorTo: yellow
 short_description: 一个基于RAG的简易实现，包含FastAPI后端和Gradio前端。
 app_file: start.py
 python_version: 3.12
+sdk_version: 5.15.0
 ---
 # ✨ SimpleRAG
 
