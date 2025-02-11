@@ -4,7 +4,7 @@ import os
 from conf.config import config
 
 
-base_url = f"http://{config["server"]["fastapi"]["host"]}:{config["server"]["fastapi"]["port"]}"
+base_url = f"http://{config['server']['fastapi']['host']}:{config['server']['fastapi']['port']}"
 
 
 def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, rerank_top_k, params,

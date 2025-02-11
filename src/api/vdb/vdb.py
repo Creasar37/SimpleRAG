@@ -87,7 +87,7 @@ def add_file(vdb_name: str = Form(...), files: List[UploadFile] = File(...)):
             params=(file_hash, vdb_name)
         )
     if res:
-        res = f"成功插入{res["insert_count"]}条"
+        res = f"成功插入{res['insert_count']}条"
         logger.info(res)
     else:
         res = ""
@@ -172,7 +172,7 @@ def file_delete(file_delete_request: VDBFileDeleteRequest):
     else:
         raise Exception("vdb_type错误")
     if res:
-        res = f"成功删除{res["delete_count"]}条"
+        res = f"成功删除{res['delete_count']}条"
         logger.info(res)
     else:
         res = ""
