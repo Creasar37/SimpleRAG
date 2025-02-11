@@ -12,7 +12,7 @@ def generate_file_hash(file_path):
     return sha256_hash.hexdigest()
 
 
-def fastapi_test(base_url, retry=10):
+def fastapi_test(base_url, retry=30):
     time.sleep(5)
     n = 0
     while n <= retry:
