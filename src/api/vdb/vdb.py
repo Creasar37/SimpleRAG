@@ -222,7 +222,7 @@ def llm_chat(chat_request: LLMChatRequest):
     rerank_metric = chat_request.rerank_metric
     rerank_top_k = chat_request.rerank_top_k
     params = chat_request.params
-    if top_k < rerank_top_k:
+    if use_rerank and top_k < rerank_top_k:
         return LLMChatResponse(answer="", details="rerank_top_k不能大于top_k")
     if params is None:
         params = {}
