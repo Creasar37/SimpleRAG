@@ -52,7 +52,7 @@ with gr.Blocks() as app:
         )
     with gr.Tab("向量库管理"):
         with gr.Row():
-            vdb_name = gr.Dropdown(choices=[], label="选择向量库", interactive=True, scale=9)
+            vdb_name = gr.Dropdown(choices=[], label="选择向量库", interactive=True, scale=8)
             app.load(
                 fn=lambda: gr.update(choices=list_vdb()),
                 inputs=None,
