@@ -26,6 +26,10 @@ def chat_request(use_rag, vdb_name, top_k, use_rerank, reranker, rerank_metric, 
         "params": params
     }
     history.extend([{"role": "user", "content": msg}, {"role": "assistant", "content": ""}])
+    if not vdb_name:
+        history[-1]["content"] = "请选择向量库"
+        yield "", history
+        return
     with requests.post(f"{base_url}/v1/llm/chat", json=data, stream=True) as response:
         for chunk in response.iter_content(chunk_size=256):
             if history[-1]["content"] == "":
@@ -67,6 +71,10 @@ def create_vdb(embedding_model, vdb_name, vdb_type, params):
 def add_file(vdb_name, files):
     file_objects = []
     file_data = []
+    if not vdb_name:
+        return "请选择向量库"
+    if not files:
+        return "请添加文件"
     for path in files:
         f = open(path, "rb")
         file_objects.append(f)
@@ -90,5 +98,9 @@ def file_list(vdb_name):
 
 
 def file_delete(vdb_name, file_name):
+    if not vdb_name:
+        return "请选择向量库"
+    if not file_name:
+        return "请选择文件"
     res = requests.post(f"{base_url}/v1/vdb/file/delete", json={"vdb_name": vdb_name, "file_name": file_name}).json()
     return "，".join([res["status"], res["details"]])
